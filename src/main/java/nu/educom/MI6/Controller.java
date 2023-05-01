@@ -12,38 +12,34 @@ public class Controller {
     }
     public void run(){
         while(true) {
-            String agentNumberString = md.view.showInput("Enter agent number:");//JOptionPane.showInputDialog(null, "Enter agent number:");
-
-            while (!validateAgentNumber(agentNumberString) && agentNumberString != null) {
-                md.view.showErrorMessage("ACCESS DENIED!");
-                agentNumberString = md.view.showInput("Enter agent number:");
-            }
-            if (agentNumberString == null) {
-                break;
-            }
-            int agentNumber = Integer.parseInt(agentNumberString);
-            if (inArraylist(md.loggedInAgents,agentNumber)){
-                JOptionPane.showMessageDialog(null, "You are logged in", "Error", JOptionPane.ERROR_MESSAGE);
-
-            }
-            else if(inArraylist(md.blacklistedAgents,agentNumber)) {
-                md.view.showErrorMessage("ACCESS DENIED! You are blacklisted");
-
-            }
-            else {
-                String SecretSentence = JOptionPane.showInputDialog(md.view.frame, String.format("%03d Secret sentence: ", agentNumber));
-
-                if (SecretSentence.compareTo("Y") == 0) { //For ThE Royal QUEEN
+            while (md.setLogInAttempt()) {
+                System.out.println(md.logInAttempt.getAgentNumber());
+                if (!validateAgentNumber(md.view.logInAttempt.getAgentNumber())){
+                    JOptionPane.showMessageDialog(null, "ACCESS DENIED!", "Error", JOptionPane.ERROR_MESSAGE);
+                    md.view.ready = false;
+                    break;
+                }
+                Integer agentNumber = Integer.parseInt(md.logInAttempt.getAgentNumber());
+                if (inArraylist(md.loggedInAgents, agentNumber)) {
+                    JOptionPane.showMessageDialog(null, "You are logged in", "Error", JOptionPane.ERROR_MESSAGE);
+                    md.view.ready = false;
+                    break;
+                } else if (inArraylist(md.blacklistedAgents, agentNumber)) {
+                    JOptionPane.showMessageDialog(null, "ACCESS DENIED! You are blacklisted", "Error", JOptionPane.ERROR_MESSAGE);
+                    md.view.ready = false;
+                    break;
+                }
+                if (md.view.logInAttempt.getSecretSentence().compareTo("For ThE Royal QUEEN") == 0) { //For ThE Royal QUEEN
                     JOptionPane.showMessageDialog(null, String.format("Welcome Agent %03d\n", agentNumber), "Welcome", JOptionPane.INFORMATION_MESSAGE);
                     md.loggedInAgents.add(agentNumber);
 
                 } else {
-                    md.view.showErrorMessage("ACCESS DENIED! You are blacklisted");
+                    JOptionPane.showMessageDialog(null, "ACCESS DENIED! You are blacklisted", "Error", JOptionPane.ERROR_MESSAGE);
                     md.blacklistedAgents.add(agentNumber);
                 }
+                md.view.ready = false;
             }
         }
-
     }
 
     public static boolean validateAgentNumber(String input) {
@@ -51,11 +47,6 @@ public class Controller {
         if (!isInteger(input)) {
             return false;
         }
-
-        return isValidAgentNumber(input);
-    }
-
-    public static boolean isValidAgentNumber(String input){
         if (input.length() > 3){
             return false;
         }

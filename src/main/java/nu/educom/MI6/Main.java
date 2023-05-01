@@ -12,7 +12,6 @@ public class Main {
     View view = new View();
     Model mdl = new Model(view);
     Controller controller = new Controller(mdl);
-    System.out.println(controller.md.blacklistedAgents);
     controller.run();
   }
 
