@@ -2,18 +2,26 @@ package nu.educom.MI6;
 
 public class LogInAttempt {
     String agentNumber;
-    String secretSentence;
+    String passPhrase;
 
-    public LogInAttempt(String aN, String sS){
+    public LogInAttempt(String aN, String pP){
         agentNumber = aN;
-        secretSentence = sS;
+        passPhrase = pP;
     }
 
     public String getAgentNumber(){
         return agentNumber;
     }
 
+    public void setAgentNumber(String agentNumber) {
+        this.agentNumber = agentNumber;
+    }
+
+    public void setSecretSentence(String secretSentence) {
+        this.passPhrase = secretSentence;
+    }
+
     public String getSecretSentence() {
-        return secretSentence;
+        return passPhrase;
     }
 }
