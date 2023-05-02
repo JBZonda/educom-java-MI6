@@ -9,10 +9,9 @@ import javax.swing.*;
 import java.awt.event.*;
 public class Main {
   public static void main(String[] args) {
-    View view = new View();
-    Model mdl = new Model(view);
-    Controller controller = new Controller(mdl);
-    controller.run();
+    IView view = new ConsoleView();
+    MI6Model mdl = new MI6Model();
+    Presentor presentor = new Presentor(view,mdl);
   }
 
 
