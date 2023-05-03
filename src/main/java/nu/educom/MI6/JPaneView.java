@@ -13,7 +13,7 @@ public class JPaneView implements IView, ActionListener {
     static JLabel l3;
     static JPanel p;
     IPresentor pres;
-    LogInAttempt lIA;
+    LogInInput lIA;
     Object lockObj = new Object();
     public JPaneView(){
         f = new JFrame("Agent log in");
@@ -52,7 +52,7 @@ public class JPaneView implements IView, ActionListener {
         String s = e.getActionCommand();
         if (s.equals("submit")) {
 
-            lIA = new LogInAttempt(t1.getText(), t2.getText());
+            lIA = new LogInInput(t1.getText(), t2.getText());
             t1.setText("");
             t2.setText("");
 
