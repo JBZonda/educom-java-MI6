@@ -1,25 +1,35 @@
 package nu.educom.MI6;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Repository {
     Connection conn;
-    private Connection connect(){
+    private void connect(){
 
-        Connection conn = null;
         try{
 
         // db parameters
         String url       = "jdbc:mysql://localhost:3306/MI6";
-        String user      = "root";
-        String password  = "zgl9/nfe1CIA77b@";
+        String user      = "jeroens_webshop_user";
+        String password  = "p@TL!Cz7m2qes7V!";
 
         conn = DriverManager.getConnection(url, user, password);
         } catch(SQLException e) {
-            System.out.println(e.getMessage());
+            throw new NullPointerException(e.getMessage());
         }
-        return conn;
+    }
+
+    private void disconnect(){
+        try{
+            if(conn != null) {
+                conn.close();
+            }
+        }catch(SQLException e){
+            throw new NullPointerException(e.getMessage());
+        }
     }
 
     public List<Agent> getAgents(int serviceNumber) {
@@ -27,11 +37,9 @@ public class Repository {
     }
 
     public List<Agent> getAgents(int serviceNumber, boolean active){
-        List<Agent> agents = new ArrayList<Agent>();
+        List<Agent> agents = new ArrayList<>();
         try{
-            conn = connect();
-            System.out.println("connected");
-
+            connect();
             String sql = "SELECT * from agents WHERE serviceNumber = ? and active= ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1,serviceNumber);
@@ -50,15 +58,9 @@ public class Repository {
             rs.close();
             pstmt.close();
         } catch(SQLException e) {
-            System.out.println(e.getMessage());
+            throw new NullPointerException(e.getMessage());
         } finally {
-            try{
-                if(conn != null) {
-                    conn.close();
-                }
-            }catch(SQLException ex){
-                System.out.println(ex.getMessage());
-            }
+            disconnect();
         }
 
         return agents;
@@ -81,6 +83,59 @@ public class Repository {
             return false;
         }
         return agent.getPassPhrase().equals(pP);
+    }
+
+    public List<LogInAttempt> getLastLogInAttempts(int serviceNumber) {
+        return getLastLogInAttempts(serviceNumber, false);
+    }
+
+    public List<LogInAttempt> getLastLogInAttempts(int serviceNumber, boolean onlyLastLogIn){
+
+        List<LogInAttempt> lastLogInAttempts = new ArrayList<>();
+        try{
+            connect();
+            String sql;
+            if (onlyLastLogIn){
+                sql = "SELECT * from login_attempts WHERE serviceNumber = ? ORDER BY loginTime DESC LIMIT 1";
+            } else {
+                sql = "SELECT * from login_attempts WHERE serviceNumber = ? ORDER BY loginTime DESC";
+            }
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1,serviceNumber);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                lastLogInAttempts.add(
+                        new LogInAttempt(rs.getInt("id"),
+                                rs.getInt("serviceNumber"),
+                                rs.getObject("loginTime", LocalDateTime.class),
+                                rs.getBoolean("success")));
+            }
+            rs.close();
+            pstmt.close();
+        } catch (SQLException e) {
+            throw new NullPointerException(e.getMessage());
+        } finally {
+            disconnect();
+        }
+        return lastLogInAttempts;
+    }
+
+    public void createLogInAttempt(int serviceNumber, boolean success){
+        try{
+            connect();
+            String sql = "INSERT INTO `login_attempts` (`serviceNumber`, `success`) VALUES (?, ?); ";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1,serviceNumber);
+            pstmt.setBoolean(2,success);
+            pstmt.execute();
+
+            pstmt.close();
+        } catch (SQLException e) {
+            throw new NullPointerException(e.getMessage());
+        } finally {
+            disconnect();
+        }
 
     }
 

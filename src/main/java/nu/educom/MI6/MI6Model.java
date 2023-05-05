@@ -1,17 +1,17 @@
 package nu.educom.MI6;
 
-import javax.swing.*;
+import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MI6Model {
-    //LogInAttempt logInAttempt = new LogInAttempt(null,null);
-
+    Repository rep;
     Integer logInAgent;
-
-    List<Integer> blacklistedAgents = new ArrayList<Integer>();
-    List<Integer> loggedInAgents = new ArrayList<Integer>();
-    public MI6Model(){
+    List<Integer> loggedInAgents = new ArrayList<>();
+    public MI6Model(Repository repository){
+        rep = repository;
     }
 
     public void setLogInAgent(String aN){
@@ -35,7 +35,7 @@ public class MI6Model {
 
     public boolean isInteger(String input) {
         try {
-            int result = Integer.parseInt(input);
+            Integer.parseInt(input);
             return true;
         }
         catch (NumberFormatException ex){
@@ -43,32 +43,62 @@ public class MI6Model {
         }
     }
 
-    public boolean validPassPhrase(String input){
-        return input.compareTo("For ThE Royal QUEEN") == 0;
+    public boolean validPassPhrase(String sN,String pP){
+
+        return rep.authenticateAgent(Integer.parseInt(sN),pP);
     }
 
-    public void addBlackList(Integer agentNumber){
-        blacklistedAgents.add(agentNumber);
+    public void saveLogInAttempt(String serviceNumber, boolean success){
+        rep.createLogInAttempt(Integer.parseInt(serviceNumber),success);
     }
 
-    public void addLogedINList(Integer agentNumber){
+
+    public void addLoggedINList(Integer agentNumber){
         loggedInAgents.add(agentNumber);
-    }
-
-    public boolean inBlacklist(){
-        return inArraylist(blacklistedAgents,logInAgent);
     }
 
     public boolean inLoggedInList(){
         return inArraylist(loggedInAgents,logInAgent);
     }
     public static boolean inArraylist(List<Integer> list, Integer item){
-
-        for (int i = 0; i < list.size();i++) {
-            if (list.get(i) == item) {
+        for (Integer integer : list) {
+            if (Objects.equals(integer, item)) {
                 return true;
             }
         }
         return false;
     }
+
+    public boolean needTimeOut(int sN){
+        List <LogInAttempt> logInAttempt = rep.getLastLogInAttempts(sN, true);
+
+        // first login for service number
+        if (logInAttempt.size() == 0) {
+            return false;
+        }
+        return !logInAttempt.get(0).success ;
+    }
+
+    public int getTimeOut(int sN){
+        LocalDateTime timeout;
+        List <LogInAttempt> logInAttempts = rep.getLastLogInAttempts(sN);
+        int i = 0;
+        int numberOfLogIn = logInAttempts.size();
+        while (!logInAttempts.get(i).isSuccess()) { //&& numberOfLogIn > i){
+            i++;
+            if (numberOfLogIn == i) {
+                i--;
+                break;
+            }
+        }
+        double timeOutLength = Math.pow(2,i);
+        timeout = logInAttempts.get(0).getLoginTime().plusMinutes((long) timeOutLength);
+        System.out.println(timeOutLength);
+
+        Duration duration = Duration.between(LocalDateTime.now(), timeout);
+
+        return (int) duration.toSeconds();
+    }
+
+
 }

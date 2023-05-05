@@ -9,19 +9,16 @@ public class JPaneView implements IView, ActionListener {
     static JTextField t2;
     static JLabel l1;
     static JLabel l2;
-
-    static JLabel l3;
     static JPanel p;
     IPresentor pres;
     LogInInput lIA;
-    Object lockObj = new Object();
+    final Object lockObj = new Object();
     public JPaneView(){
         f = new JFrame("Agent log in");
 
         // create a label to display text
         l1 = new JLabel("Agent Number");
         l2 = new JLabel("Secret Sentence");
-        l3 = new JLabel("Dit is een bericht asdasd asdas das dasd asd asd asd asdasd asd asd");
         // create a new button
         b = new JButton("submit");
 
@@ -39,11 +36,10 @@ public class JPaneView implements IView, ActionListener {
         p.add(l2);
         p.add(t2);
         p.add(b);
-        p.add(l3);
         f.add(p);
 
         // frame settings
-        f.setSize(350, 200);
+        f.setSize(380, 200);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setVisible(true);
     }
@@ -64,8 +60,13 @@ public class JPaneView implements IView, ActionListener {
         }
     }
     @Override
-    public void showMessage(String msg) {
-        l3.setText(msg);
+    public void showError(String msg) {
+        JOptionPane.showMessageDialog(null, msg,"Message", JOptionPane.ERROR_MESSAGE);
+    }
+
+    @Override
+    public void showWelcome(String msg) {
+        JOptionPane.showMessageDialog(null, msg,"Message", JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
@@ -105,5 +106,15 @@ public class JPaneView implements IView, ActionListener {
     @Override
     public void addPresentorListener(IPresentor p) {
         pres = p;
+    }
+
+    public void showTimeOut(int totalTimeSec){
+        int sec = totalTimeSec % 60;
+        int minT = totalTimeSec / 60;
+        int min = minT % 60;
+        int hrT = minT / 60;
+        int hr = hrT % 24;
+        int day = hrT / 24;
+        showError("you are timed out for: " + day + " days " + hr + " hours " + min + " minutes " + sec + " seconds");
     }
 }

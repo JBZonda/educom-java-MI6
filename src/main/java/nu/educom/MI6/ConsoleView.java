@@ -1,12 +1,19 @@
 package nu.educom.MI6;
+import javax.swing.*;
 import java.util.Scanner;
 public class ConsoleView implements IView{
     IPresentor pres;
     Scanner scan = new Scanner(System.in);
     String agentNumberString;
     String passPhrase;
+
     @Override
-    public void showMessage(String msg) {
+    public void showError(String msg) {
+        System.out.println(msg);
+    }
+
+    @Override
+    public void showWelcome(String msg) {
         System.out.println(msg);
     }
 
@@ -40,5 +47,14 @@ public class ConsoleView implements IView{
     public void addPresentorListener(IPresentor p) {
         pres = p;
 
+    }
+    public void showTimeOut(int totalTimeSec){
+        int sec = totalTimeSec % 60;
+        int minT = totalTimeSec / 60;
+        int min = minT % 60;
+        int hrT = minT / 60;
+        int hr = hrT % 24;
+        int day = hrT / 24;
+        showError("You are timed out for: " + day + " days " + hr + " hours " + min + " minutes " + sec + " seconds");
     }
 }
