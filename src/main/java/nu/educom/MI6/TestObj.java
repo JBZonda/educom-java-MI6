@@ -1,10 +1,14 @@
 package nu.educom.MI6;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDate;
-import javax.persistence.*;
+
 @Entity
 @Table(name="agents")
-public class Agent {
+public class TestObj {
     @Id
     int id;
     @Column(name="service_number")
@@ -18,43 +22,51 @@ public class Agent {
     @Column(name="licence_to_kill_end")
     LocalDate licenceToKillEnd;
 
-    public Agent(int id, int serviceNumber, String passPhrase, boolean active, boolean licenceToKill, LocalDate licenceToKillEnd){
+    public void setId(int id) {
         this.id = id;
-        this.serviceNumber = serviceNumber;
-        this.passPhrase = passPhrase;
-        this.active = active;
-        this.licenceToKill = licenceToKill;
-        this.licenceToKillEnd = licenceToKillEnd;
-    }
-
-    public Agent(){
-
     }
 
     public int getId() {
         return id;
     }
+
     public int getServiceNumber() {
         return serviceNumber;
     }
+
+    public void setServiceNumber(int serviceNumber) {
+        this.serviceNumber = serviceNumber;
+    }
+
     public String getPassPhrase() {
         return passPhrase;
+    }
+
+    public void setPassPhrase(String passPhrase) {
+        this.passPhrase = passPhrase;
     }
 
     public boolean getActive() {
         return active;
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     public boolean getLicenceToKill() {
         return licenceToKill;
+    }
+
+    public void setLicenceToKill(boolean licenceToKill) {
+        this.licenceToKill = licenceToKill;
     }
 
     public LocalDate getLicenceToKillEnd() {
         return licenceToKillEnd;
     }
 
-    public void fullPrint() {
-        System.out.println(getServiceNumber()+"-" + getPassPhrase() + "-" + getLicenceToKill());
+    public void setLicenceToKillEnd(LocalDate licenceToKillEnd) {
+        this.licenceToKillEnd = licenceToKillEnd;
     }
-
 }

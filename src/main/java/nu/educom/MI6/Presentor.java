@@ -54,7 +54,7 @@ public class Presentor implements IPresentor {
         } else {
             mdl.addLoggedINList(mdl.getLogInAgent());
             mdl.saveLogInAttempt(serviceNumber,true);
-            view.showWelcome(String.format("Welcome Agent %03d\n asdasfafsasf asdsfafasfsaf \n adasfasfsfafs \n adafasf \n adawfafafae \n afaavavddvssdvsdv \n fffffffff", mdl.getLogInAgent()));
+            view.showWelcome(mdl.makeWelcome());
         }
     }
 }

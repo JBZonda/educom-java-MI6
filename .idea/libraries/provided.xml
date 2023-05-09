@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="provided">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/database/hibernate-search-5.8.0.Final/dist/lib/provided" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/database/hibernate-search-5.8.0.Final/dist/lib/provided" recursive="false" />
+  </library>
+</component>

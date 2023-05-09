@@ -1,5 +1,7 @@
 package nu.educom.MI6;
 
+import com.mysql.cj.log.Log;
+
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -84,14 +86,14 @@ public class MI6Model {
         List <LogInAttempt> logInAttempts = rep.getLastLogInAttempts(sN);
         int i = 0;
         int numberOfLogIn = logInAttempts.size();
-        while (!logInAttempts.get(i).isSuccess()) { //&& numberOfLogIn > i){
+        while (!logInAttempts.get(i).getSuccess()) {
             i++;
             if (numberOfLogIn == i) {
                 i--;
                 break;
             }
         }
-        double timeOutLength = Math.pow(2,i);
+        double timeOutLength = Math.pow(2,i+1);
         timeout = logInAttempts.get(0).getLoginTime().plusMinutes((long) timeOutLength);
         System.out.println(timeOutLength);
 
@@ -100,5 +102,32 @@ public class MI6Model {
         return (int) duration.toSeconds();
     }
 
+    public String makeWelcome() {
+
+        Agent agent = rep.getAgent(logInAgent);
+        String welcome = String.format("Welcome Agent %03d \n", agent.getServiceNumber());
+
+        if (agent.getLicenceToKill()) {
+            welcome += String.format("You have a Licence To Kill until %s\n\n", agent.getLicenceToKillEnd().toString());
+        } else {
+            welcome += "You do not have a Licence To Kill\n\n";
+        }
+
+        List<LogInAttempt> logInAttempts = rep.getLastLogInAttempts(agent.getServiceNumber());
+        if (logInAttempts.get(1).getSuccess()) {
+            return welcome;
+        }
+        welcome += "-------past-failed-logins-------\n";
+        int numberOfLogIn = logInAttempts.size();
+        int i = 1;
+        while (!logInAttempts.get(i).getSuccess()) {
+            welcome += logInAttempts.get(i).loginTime.toString() + "\n";
+            i++;
+            if (numberOfLogIn == i) {
+                return welcome;
+            }
+        }
+    return welcome;
+    }
 
 }

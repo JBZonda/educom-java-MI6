@@ -1,35 +1,34 @@
 package nu.educom.MI6;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
+import javax.management.Query;
+import javax.persistence.*;
 public class Repository {
+    Session session;
+    SessionFactory factory;
     Connection conn;
+    Repository(){
+        StandardServiceRegistry ssr = new StandardServiceRegistryBuilder().configure().build();
+        Metadata meta = new MetadataSources(ssr).getMetadataBuilder().build();
+        factory = meta.getSessionFactoryBuilder().build();
+    }
     private void connect(){
-
-        try{
-
-        // db parameters
-        String url       = "jdbc:mysql://localhost:3306/MI6";
-        String user      = "jeroens_webshop_user";
-        String password  = "p@TL!Cz7m2qes7V!";
-
-        conn = DriverManager.getConnection(url, user, password);
-        } catch(SQLException e) {
-            throw new NullPointerException(e.getMessage());
-        }
+        session = factory.openSession();
     }
 
     private void disconnect(){
-        try{
-            if(conn != null) {
-                conn.close();
-            }
-        }catch(SQLException e){
-            throw new NullPointerException(e.getMessage());
-        }
+        session.close();
     }
 
     public List<Agent> getAgents(int serviceNumber) {
@@ -37,28 +36,15 @@ public class Repository {
     }
 
     public List<Agent> getAgents(int serviceNumber, boolean active){
-        List<Agent> agents = new ArrayList<>();
+        List<Agent> agents;
         try{
             connect();
-            String sql = "SELECT * from agents WHERE serviceNumber = ? and active= ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1,serviceNumber);
-            pstmt.setBoolean(2,active);
-            ResultSet rs = pstmt.executeQuery();
+            String hql = "FROM Agent AS a WHERE a.serviceNumber = :serviceNumber and a.active= :active";
+            var query = session.createQuery(hql);
+            query.setParameter("serviceNumber",serviceNumber);
+            query.setParameter("active", active);
+            agents = (List<Agent>) query.list();
 
-            while (rs.next()) {
-                agents.add(
-                        new Agent(rs.getInt("id"),
-                                    rs.getInt("serviceNumber"),
-                                rs.getString("passPhrase"),
-                                rs.getBoolean("active"),
-                                rs.getBoolean("licence_to_kill"),
-                                rs.getDate("licence_to_kill_end").toLocalDate()));
-            }
-            rs.close();
-            pstmt.close();
-        } catch(SQLException e) {
-            throw new NullPointerException(e.getMessage());
         } finally {
             disconnect();
         }
@@ -94,27 +80,18 @@ public class Repository {
         List<LogInAttempt> lastLogInAttempts = new ArrayList<>();
         try{
             connect();
-            String sql;
-            if (onlyLastLogIn){
-                sql = "SELECT * from login_attempts WHERE serviceNumber = ? ORDER BY loginTime DESC LIMIT 1";
-            } else {
-                sql = "SELECT * from login_attempts WHERE serviceNumber = ? ORDER BY loginTime DESC";
-            }
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1,serviceNumber);
-            ResultSet rs = pstmt.executeQuery();
+            String hql;
+            hql = "FROM LogInAttempt WHERE serviceNumber = :serviceNumber ORDER BY loginTime DESC";
 
-            while (rs.next()) {
-                lastLogInAttempts.add(
-                        new LogInAttempt(rs.getInt("id"),
-                                rs.getInt("serviceNumber"),
-                                rs.getObject("loginTime", LocalDateTime.class),
-                                rs.getBoolean("success")));
+            var query = session.createQuery(hql);
+            query.setParameter("serviceNumber",serviceNumber);
+            if (onlyLastLogIn){
+                query.setMaxResults(1);
             }
-            rs.close();
-            pstmt.close();
-        } catch (SQLException e) {
-            throw new NullPointerException(e.getMessage());
+
+            lastLogInAttempts = (List<LogInAttempt>) query.list();
+
+
         } finally {
             disconnect();
         }
@@ -124,15 +101,16 @@ public class Repository {
     public void createLogInAttempt(int serviceNumber, boolean success){
         try{
             connect();
-            String sql = "INSERT INTO `login_attempts` (`serviceNumber`, `success`) VALUES (?, ?); ";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1,serviceNumber);
-            pstmt.setBoolean(2,success);
-            pstmt.execute();
+            Transaction t = session.beginTransaction();
 
-            pstmt.close();
-        } catch (SQLException e) {
-            throw new NullPointerException(e.getMessage());
+            LogInAttempt logInAttempt = new LogInAttempt();
+            logInAttempt.setServiceNumber(serviceNumber);
+            logInAttempt.setSuccess(success);
+            logInAttempt.setLoginTime(LocalDateTime.now());
+
+            session.save(logInAttempt);
+            t.commit();
+
         } finally {
             disconnect();
         }
